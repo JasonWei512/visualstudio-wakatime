@@ -51,6 +51,7 @@ namespace WakaTime
         private SettingsForm _settingsForm;
         private bool _isBuildRunning;
         private string _solutionName;
+        private StatusbarControl _statusbarControl;
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -121,6 +122,14 @@ namespace WakaTime
                     var menuItem = new MenuCommand(MenuItemCallback, menuCommandId);
                     mcs.AddCommand(menuItem);
                 }
+
+                // Setup status bar control
+                _statusbarControl = new StatusbarControl();
+                _statusbarControl.SetToolTip("WakaTime: Today's coding time. Click to visit dashboard.");
+                string statusbarControlText = string.IsNullOrEmpty(_wakatime.TotalTimeToday) ? "WakaTime" : _wakatime.TotalTimeToday;
+                _statusbarControl.SetText(statusbarControlText);
+                _wakatime.TotalTimeTodayUpdated += WakatimeTotalTimeTodayUpdated;
+                await StatusbarInjector.InjectControlAsync(_statusbarControl);
 
                 // setup event handlers
                 _docEvents.DocumentOpened += DocEventsOnDocumentOpened;
@@ -380,6 +389,15 @@ namespace WakaTime
             {
                 _logger.Error("TextEditorEventsLineChanged", ex);
             }
+        }
+
+        private void WakatimeTotalTimeTodayUpdated(object sender, TotalTimeTodayUpdatedEventArgs e)
+        {
+            _ = JoinableTaskFactory.RunAsync(async () =>
+            {
+                await JoinableTaskFactory.SwitchToMainThreadAsync();
+                _statusbarControl.SetText(e.TotalTimeToday);
+            });
         }
     }
 
