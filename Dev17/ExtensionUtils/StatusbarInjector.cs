@@ -64,8 +64,30 @@ namespace WakaTime.ExtensionUtils
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             await EnsureUIAsync();
 
-            element.SetValue(DockPanel.DockProperty, Dock.Left);
-            _panel.Children.Insert(1, element);
+            // Place the element to the left of all elements on the right side of the status bar
+            element.SetValue(DockPanel.DockProperty, Dock.Right);
+            int index = GetLastDockRightElementIndex(_panel.Children) + 1;
+            _panel.Children.Insert(index, element);
+        }
+
+        private static int GetLastDockRightElementIndex(UIElementCollection elements)
+        {
+            int lastDockRightElementIndex = 0;
+
+            int elementCount = elements.Count;
+            for (int i = 0; i < elementCount; i++)
+            {
+                object element = elements[i];
+
+                if (element is DependencyObject dependencyObject &&
+                    dependencyObject.GetValue(DockPanel.DockProperty) is Dock dockProperty &&
+                    dockProperty == Dock.Right)
+                {
+                    lastDockRightElementIndex = i;
+                }
+            }
+
+            return lastDockRightElementIndex;
         }
     }
 }
