@@ -64,10 +64,10 @@ namespace WakaTime
         {
             await base.InitializeAsync(cancellationToken, progress);
 
-            var objDte = await GetServiceAsync(typeof(DTE));
+            object objDte = await GetServiceAsync(typeof(DTE));
             _dte = objDte as DTE;
 
-            var metadata = new Metadata
+            Metadata metadata = new Metadata
             {
                 EditorName = "visualstudio",
                 PluginName = "visualstudio-wakatime",
@@ -118,8 +118,8 @@ namespace WakaTime
                 if (await GetServiceAsync(typeof(IMenuCommandService)) is OleMenuCommandService mcs)
                 {
                     // Create the command for the menu item.
-                    var menuCommandId = new CommandID(new Guid(GuidList.GuidWakaTimeCmdSetString), 0x100);
-                    var menuItem = new MenuCommand(MenuItemCallback, menuCommandId);
+                    CommandID menuCommandId = new CommandID(new Guid(GuidList.GuidWakaTimeCmdSetString), 0x100);
+                    MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandId);
                     mcs.AddCommand(menuItem);
                 }
 
@@ -151,7 +151,7 @@ namespace WakaTime
         {
             _logger.Debug("It will ask for user to input its api key");
 
-            var form = new ApiKeyForm(_wakatime.Config, _logger);
+            ApiKeyForm form = new ApiKeyForm(_wakatime.Config, _logger);
 
             form.ShowDialog();
         }
@@ -169,15 +169,15 @@ namespace WakaTime
         {
             try
             {
-                var activeProjects = (object[])_dte.ActiveSolutionProjects;
+                object[] activeProjects = (object[])_dte.ActiveSolutionProjects;
                 if (_dte.Solution == null || activeProjects.Length < 1)
                     return null;
 
-                var project = (Project)((object[])_dte.ActiveSolutionProjects)[0];
-                var config = project.ConfigurationManager.ActiveConfiguration;
-                var outputPath = config.Properties.Item("OutputPath");
-                var outputFileName = project.Properties.Item("OutputFileName");
-                var projectPath = project.Properties.Item("FullPath");
+                Project project = (Project)((object[])_dte.ActiveSolutionProjects)[0];
+                Configuration config = project.ConfigurationManager.ActiveConfiguration;
+                Property outputPath = config.Properties.Item("OutputPath");
+                Property outputFileName = project.Properties.Item("OutputFileName");
+                Property projectPath = project.Properties.Item("FullPath");
 
                 return $"{projectPath.Value}{outputPath.Value}{outputFileName.Value}";
             }
@@ -191,15 +191,15 @@ namespace WakaTime
         {
             try
             {
-                var project = _dte.Solution.Projects.Cast<Project>()
+                Project project = _dte.Solution.Projects.Cast<Project>()
                                 .FirstOrDefault(proj => proj.UniqueName == projectName);
 
-                var config = project.ConfigurationManager.Cast<EnvDTE.Configuration>()
+                Configuration config = project.ConfigurationManager.Cast<EnvDTE.Configuration>()
                                 .FirstOrDefault(conf => conf.PlatformName == platform && conf.ConfigurationName == projectConfig);
 
-                var outputPath = config.Properties.Item("OutputPath");
-                var outputFileName = project.Properties.Item("OutputFileName");
-                var projectPath = project.Properties.Item("FullPath");
+                Property outputPath = config.Properties.Item("OutputPath");
+                Property outputFileName = project.Properties.Item("OutputFileName");
+                Property projectPath = project.Properties.Item("FullPath");
 
                 return $"{projectPath.Value}{outputPath.Value}{outputFileName.Value}";
             }
@@ -225,7 +225,7 @@ namespace WakaTime
         {
             try
             {
-                var category = _isBuildRunning
+                HeartbeatCategory category = _isBuildRunning
                         ? HeartbeatCategory.Building
                         : _dte.Debugger.CurrentMode == dbgDebugMode.dbgBreakMode
                             ? HeartbeatCategory.Debugging
@@ -243,7 +243,7 @@ namespace WakaTime
         {
             try
             {
-                var category = _isBuildRunning
+                HeartbeatCategory category = _isBuildRunning
                         ? HeartbeatCategory.Building
                         : _dte.Debugger.CurrentMode == dbgDebugMode.dbgBreakMode
                             ? HeartbeatCategory.Debugging
@@ -261,10 +261,10 @@ namespace WakaTime
         {
             try
             {
-                var document = _dte.ActiveWindow.Document;
+                Document document = _dte.ActiveWindow.Document;
                 if (document != null)
                 {
-                    var category = _isBuildRunning
+                    HeartbeatCategory category = _isBuildRunning
                         ? HeartbeatCategory.Building
                         : _dte.Debugger.CurrentMode == dbgDebugMode.dbgBreakMode
                             ? HeartbeatCategory.Debugging
@@ -295,7 +295,7 @@ namespace WakaTime
         {
             try
             {
-                var outputFile = GetCurrentProjectOutputForCurrentConfiguration();
+                string outputFile = GetCurrentProjectOutputForCurrentConfiguration();
 
                 _wakatime.HandleActivity(outputFile, false, GetProjectName(), HeartbeatCategory.Debugging);
             }
@@ -309,7 +309,7 @@ namespace WakaTime
         {
             try
             {
-                var outputFile = GetCurrentProjectOutputForCurrentConfiguration();
+                string outputFile = GetCurrentProjectOutputForCurrentConfiguration();
 
                 _wakatime.HandleActivity(outputFile, false, GetProjectName(), HeartbeatCategory.Debugging);
             }
@@ -323,7 +323,7 @@ namespace WakaTime
         {
             try
             {
-                var outputFile = GetCurrentProjectOutputForCurrentConfiguration();
+                string outputFile = GetCurrentProjectOutputForCurrentConfiguration();
 
                 _wakatime.HandleActivity(outputFile, false, GetProjectName(), HeartbeatCategory.Debugging);
             }
@@ -340,7 +340,7 @@ namespace WakaTime
             {
                 _isBuildRunning = true;
 
-                var outputFile = GetProjectOutputForConfiguration(project, platform, projectConfig);
+                string outputFile = GetProjectOutputForConfiguration(project, platform, projectConfig);
 
                 _wakatime.HandleActivity(outputFile, false, GetProjectName(), HeartbeatCategory.Building);
             }
@@ -357,7 +357,7 @@ namespace WakaTime
             {
                 _isBuildRunning = false;
 
-                var outputFile = GetProjectOutputForConfiguration(project, platform, projectConfig);
+                string outputFile = GetProjectOutputForConfiguration(project, platform, projectConfig);
 
                 _wakatime.HandleActivity(outputFile, success, GetProjectName(), HeartbeatCategory.Building);
             }
@@ -371,10 +371,10 @@ namespace WakaTime
         {
             try
             {
-                var document = startPoint.Parent.Parent;
+                Document document = startPoint.Parent.Parent;
                 if (document != null)
                 {
-                    var category = _isBuildRunning
+                    HeartbeatCategory category = _isBuildRunning
                         ? HeartbeatCategory.Building
                         : _dte.Debugger.CurrentMode == dbgDebugMode.dbgBreakMode
                             ? HeartbeatCategory.Debugging
@@ -400,6 +400,8 @@ namespace WakaTime
 
         private void UpdateStatusbarControlContent(string totalTimeToday, string totalTimeTodayDetailed)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             string text = string.IsNullOrEmpty(totalTimeToday) ? "WakaTime" : totalTimeToday;
             _statusbarControl?.SetText(text);
 
