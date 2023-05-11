@@ -125,9 +125,7 @@ namespace WakaTime
 
                 // Setup status bar control
                 _statusbarControl = new StatusbarControl();
-                _statusbarControl.SetToolTip("WakaTime: Today's coding time. Click to visit dashboard.");
-                string statusbarControlText = string.IsNullOrEmpty(_wakatime.TotalTimeToday) ? "WakaTime" : _wakatime.TotalTimeToday;
-                _statusbarControl.SetText(statusbarControlText);
+                UpdateStatusbarControlContent(_wakatime.TotalTimeToday, _wakatime.TotalTimeTodayDetailed);
                 _wakatime.TotalTimeTodayUpdated += WakatimeTotalTimeTodayUpdated;
                 await StatusbarInjector.InjectControlAsync(_statusbarControl);
 
@@ -396,8 +394,21 @@ namespace WakaTime
             _ = JoinableTaskFactory.RunAsync(async () =>
             {
                 await JoinableTaskFactory.SwitchToMainThreadAsync();
-                _statusbarControl.SetText(e.TotalTimeToday);
+                UpdateStatusbarControlContent(e.TotalTimeToday, e.TotalTimeTodayDetailed);
             });
+        }
+
+        private void UpdateStatusbarControlContent(string totalTimeToday, string totalTimeTodayDetailed)
+        {
+            string text = string.IsNullOrEmpty(totalTimeToday) ? "WakaTime" : totalTimeToday;
+            _statusbarControl?.SetText(text);
+
+            string toolTip = "WakaTime: Today's coding time";
+            if (!string.IsNullOrEmpty(totalTimeTodayDetailed))
+            {
+                toolTip += Environment.NewLine + totalTimeTodayDetailed;
+            }
+            _statusbarControl?.SetToolTip(toolTip);
         }
     }
 
