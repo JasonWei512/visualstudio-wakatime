@@ -1,12 +1,7 @@
 ﻿// Source:
 // https://github.com/madskristensen/ShowTheShortcut/blob/36f90b1a6d5a09d006b8665564bf12c28416d56c/src/StatusbarControl.cs
 
-using EnvDTE;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -52,13 +47,13 @@ namespace WakaTime.ExtensionUtils
 
         public void SetText(string text)
         {
-            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread();
             Text = string.IsNullOrEmpty(text) ? Icon : $"{Icon} {text}";
         }
 
         public void SetToolTip(string toolTip)
         {
-            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread();
             ToolTip = toolTip;
         }
     }

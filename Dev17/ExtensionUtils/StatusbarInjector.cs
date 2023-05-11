@@ -2,10 +2,6 @@
 // https://github.com/madskristensen/ShowTheShortcut/blob/36f90b1a6d5a09d006b8665564bf12c28416d56c/src/StatusbarInjector.cs
 
 using Microsoft.VisualStudio.Shell;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
