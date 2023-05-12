@@ -97,11 +97,23 @@ namespace WakaTime
 
             try
             {
-                await _wakatime.InitializeAsync();
+                // Initialize _wakatime in background, which may take several seconds
+                Task wakaTimeInitializationTask = _wakatime.InitializeAsync();
 
                 // When initialized asynchronously, the current thread may be a background thread at this point.
                 // Do any initialization that requires the UI thread after switching to the UI thread.
                 await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+                // Inject control to status bar
+                _statusbarControl = new StatusbarControl();
+                _statusbarControl.SetText("Initializing...");
+                _statusbarControl.SetToolTip("WakaTime: Initializing...");
+                await StatusbarInjector.InjectControlAsync(_statusbarControl);
+
+                // Wait for _wakatime to complete initialization，and display today's coding time on status bar
+                await wakaTimeInitializationTask;
+                UpdateTimeOnStatusbarControl(_wakatime.TotalTimeToday, _wakatime.TotalTimeTodayDetailed);
+                _wakatime.TotalTimeTodayUpdated += WakatimeTotalTimeTodayUpdated;
 
                 // Visual Studio Events              
                 _docEvents = _dte.Events.DocumentEvents;
@@ -122,12 +134,6 @@ namespace WakaTime
                     var menuItem = new MenuCommand(MenuItemCallback, menuCommandId);
                     mcs.AddCommand(menuItem);
                 }
-
-                // Setup status bar control
-                _statusbarControl = new StatusbarControl();
-                UpdateStatusbarControlContent(_wakatime.TotalTimeToday, _wakatime.TotalTimeTodayDetailed);
-                _wakatime.TotalTimeTodayUpdated += WakatimeTotalTimeTodayUpdated;
-                await StatusbarInjector.InjectControlAsync(_statusbarControl);
 
                 // setup event handlers
                 _docEvents.DocumentOpened += DocEventsOnDocumentOpened;
@@ -394,11 +400,11 @@ namespace WakaTime
             _ = JoinableTaskFactory.RunAsync(async () =>
             {
                 await JoinableTaskFactory.SwitchToMainThreadAsync();
-                UpdateStatusbarControlContent(e.TotalTimeToday, e.TotalTimeTodayDetailed);
+                UpdateTimeOnStatusbarControl(e.TotalTimeToday, e.TotalTimeTodayDetailed);
             });
         }
 
-        private void UpdateStatusbarControlContent(string totalTimeToday, string totalTimeTodayDetailed)
+        private void UpdateTimeOnStatusbarControl(string totalTimeToday, string totalTimeTodayDetailed)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
