@@ -400,6 +400,8 @@ namespace WakaTime
 
         private void UpdateStatusbarControlContent(string totalTimeToday, string totalTimeTodayDetailed)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             string text = string.IsNullOrEmpty(totalTimeToday) ? "WakaTime" : totalTimeToday;
             _statusbarControl?.SetText(text);
 
